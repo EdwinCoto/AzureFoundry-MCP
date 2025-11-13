@@ -58,11 +58,11 @@ class AzureAIAgentHandler:
             mcp_server_token = os.environ.get("MCP_SERVER_TOKEN")
             azure_project_endpoint = os.environ.get("PROJECT_ENDPOINT")
             azure_model_deployment_name = os.environ.get("MODEL_DEPLOYMENT_NAME")
-            MS_LEARN_MCP_SERVER_URL = "https://learn.microsoft.com/api/mcp"
-            MS_LEARN_MCP_SERVER_LABEL = "mslearn"
+            mcp_server_ms_learn_url = os.environ.get("MS_LEARN_MCP_SERVER_URL")
+            mcp_server_ms_learn_label = os.environ.get("MS_LEARN_MCP_SERVER_LABEL")
 
             # Verify that required environment variables are set
-            required_vars = ["PROJECT_ENDPOINT", "MODEL_DEPLOYMENT_NAME", "MCP_SERVER_URL", "MCP_SERVER_LABEL"]
+            required_vars = ["PROJECT_ENDPOINT", "MODEL_DEPLOYMENT_NAME", "MCP_SERVER_URL", "MCP_SERVER_LABEL", "MS_LEARN_MCP_SERVER_URL", "MS_LEARN_MCP_SERVER_LABEL"]
             missing_vars = [var for var in required_vars if not os.environ.get(var)]
             if missing_vars:
                 raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -76,7 +76,7 @@ class AzureAIAgentHandler:
             # Initialize agent MCP tool with authentication headers
             self.mcp_tool = [
                 McpTool(server_label=mcp_server_label,server_url=mcp_server_url),
-                McpTool(server_label=MS_LEARN_MCP_SERVER_LABEL,server_url=MS_LEARN_MCP_SERVER_URL)
+                McpTool(server_label=mcp_server_ms_learn_label,server_url=mcp_server_ms_learn_url)
                 ]
 
 
