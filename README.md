@@ -16,7 +16,11 @@ This project provides a dynamic chat interface using Chainlit to interact with a
    ```
 
 ### Environment Variables
-Before running the project, set the following environment variable:
+Before running the project, change env variable file name
+
+`.env.example -> .env`
+
+Set the following environment variable:
 - `MCP_GITHUB_TOKEN`: Your GitHub MCP server authentication token
 
 You can set this in your shell or add it to a `.env` file in the project root:
