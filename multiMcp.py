@@ -1,31 +1,4 @@
-# pylint: disable=line-too-long,useless-suppression
-# ------------------------------------
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT License.
-# ------------------------------------
-
-"""
-DESCRIPTION:
-    This file implements a dynamic chat interface using Chainlit
-    to interact with an Azure AI Agent Service agent configured with MCP.
-    
-USAGE:
-    chainlit run mainchat.py
-
-    Before running the application:
-    
-    pip install azure-ai-projects azure-ai-agents azure-identity chainlit --pre
-
-    Set these environment variables with your own values:
-    1) PROJECT_ENDPOINT - The Azure AI Project endpoint
-    2) MODEL_DEPLOYMENT_NAME - The deployed model name
-    3) MCP_SERVER_URL - The URL of your MCP server
-    4) MCP_SERVER_LABEL - A label for your MCP server
-    5) MCP_SERVER_TOKEN - Authentication token for the MCP server (optional)
-"""
-
 import os
-import time
 import asyncio
 from typing import Dict, Optional
 import chainlit as cl
@@ -53,16 +26,16 @@ class AzureAIAgentHandler:
         """Initialize Azure AI client and create agent with MCP"""
         try:
             # Get MCP server configuration from environment variables
-            mcp_server_url = os.environ.get("MCP_SERVER_URL")
-            mcp_server_label = os.environ.get("MCP_SERVER_LABEL")
-            mcp_server_token = os.environ.get("MCP_SERVER_TOKEN")
+            mcp_server_github_url = os.environ.get("MCP_GITHUB_URL")
+            mcp_server_github_label = os.environ.get("MCP_GITHUB_LABEL")
+            mcp_server_github_token = os.environ.get("MCP_GITHUB_TOKEN")
             azure_project_endpoint = os.environ.get("PROJECT_ENDPOINT")
             azure_model_deployment_name = os.environ.get("MODEL_DEPLOYMENT_NAME")
-            mcp_server_ms_learn_url = os.environ.get("MS_LEARN_MCP_SERVER_URL")
-            mcp_server_ms_learn_label = os.environ.get("MS_LEARN_MCP_SERVER_LABEL")
+            mcp_server_ms_learn_url = os.environ.get("MCP_MSLEARN_URL")
+            mcp_server_ms_learn_label = os.environ.get("MCP_MSLEARN_LABEL")
 
             # Verify that required environment variables are set
-            required_vars = ["PROJECT_ENDPOINT", "MODEL_DEPLOYMENT_NAME", "MCP_SERVER_URL", "MCP_SERVER_LABEL", "MS_LEARN_MCP_SERVER_URL", "MS_LEARN_MCP_SERVER_LABEL"]
+            required_vars = ["PROJECT_ENDPOINT", "MODEL_DEPLOYMENT_NAME", "MCP_GITHUB_URL", "MCP_GITHUB_LABEL", "MCP_MSLEARN_URL", "MCP_MSLEARN_LABEL" , "MCP_GITHUB_TOKEN"]
             missing_vars = [var for var in required_vars if not os.environ.get(var)]
             if missing_vars:
                 raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -75,21 +48,21 @@ class AzureAIAgentHandler:
 
             # Initialize agent MCP tool with authentication headers
             self.mcp_tool = [
-                McpTool(server_label=mcp_server_label,server_url=mcp_server_url),
+                McpTool(server_label=mcp_server_github_label,server_url=mcp_server_github_url),
                 McpTool(server_label=mcp_server_ms_learn_label,server_url=mcp_server_ms_learn_url)
                 ]
 
 
             # Configure authentication headers immediately after tool creation
-            if mcp_server_token:
+            if mcp_server_github_token:
                 for tool in self.mcp_tool:
                     print("tool server label:", tool)
-                    if tool.server_label == mcp_server_label: # github MCP tool
+                    if tool.server_label == mcp_server_github_label: # github MCP tool
                         print(f"Setting authorization header for MCP tool with label: {tool.server_label}")
-                        tool.update_headers("Authorization", f"Bearer {mcp_server_token}")
+                        tool.update_headers("Authorization", f"Bearer {mcp_server_github_token}")
 
             else:
-                print("Warning: No MCP_SERVER_TOKEN found in environment variables")
+                print("Warning: No MCP_GITHUB_TOKEN found in environment variables")
 
             # Create agents client
             self.agents_client = self.project_client.agents
@@ -101,13 +74,11 @@ class AzureAIAgentHandler:
                 model=azure_model_deployment_name,
                 name="MCPChatAgentDemo",
                 instructions=f"""You are a helpful assistant that can use MCP tools to help users. 
-                You have access to a Github MCP server at {mcp_server_url} with label '{mcp_server_label}'.
+                You have access to a Github MCP server at {mcp_server_github_url} with label '{mcp_server_github_label}'.
+                you have access to a mslearn MCP server at {mcp_server_ms_learn_url} with label '{mcp_server_ms_learn_label}'.
                 You are responsible for assisting users with github queries and operations. 
                 Use the MCP tools as needed to fulfill user requests.
-                if user request data about repositories like readme.md or code files , answer them in markdown format.
-                if user request data about azure resources , use the mslearn MCP tool to get accurate information.
-                If user requests is not related to github, forward them to use a general purpose model.        
-                Add emoji reactions to your messages for a more interactive experience! 🤖🔌🏠.
+                if user request data about azure resources , use the mslearn MCP tool to get accurate information.  
                 """,
                 tools=[definition for tool in self.mcp_tool for definition in tool.definitions]
             )
